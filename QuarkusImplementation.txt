@@ -1,0 +1,149 @@
+Quarkus
+
+./mvnw clean install
+./mvnw quarkus:dev
+
+
+ 
+1.App Created***
+2.now add other dependencies
+
+
+
+
+BIRT is a report engine that we use in Payroll, CCR, and Work Management/Portal to generate PDF/Excel/other reports. An .rptdesign report file is an XML file that we create in a GUI Report Designer provided by the BIRT project. For our current apps, we are running an ancient version of the "BIRT Viewer" war file into Glassfish (and bundling the .rptdesign files within it), and calling it to over http to generate reports. For this proof of concept, we want to instead write a standalone java application capable of generating the reports using the BIRT runtime, which is a library we would bundle in the application. Also note that while we are doing this initially for Payroll, we will be able to use this service for any of our applications.
+
+Goals (shown in priority order - complete a step before moving to the next)
+If at any time you think that there is a better way to do things than what I've listed below, let's talk about it. This is what I'm envisioning, but I haven't actually done the project and it's possible that you might come up with different ideas along the way.
+Create a new Quarkus project that is able to run a sample BIRT report. Hopefully can get a sample report that doesn't need database access from the BIRT project or a sample git repo etc
+If you can find a sample BIRT report that utilizes a database connection to select information out of a table, try running it (you would need to create a database with sample data in it) in the quarkus app. If you can't find a sample report that uses the database, do step 4 first then come back here
+Install the BIRT Report Designer (can grab the "all-in-one" zip from BIRT downloads, which includes Eclipse plus the designer plugin). Use the report designer to create a simple report that selects information from the database, then run the report with the quarkus app you created as in step 2
+Implement a web service in the Quarkus project so that you can call the method with any parameters the report needs (at a minimum, could just be the name of the report file to run for now), where the service returns the binary output to download as a file
+
+Resources
+Quarkus app quick start (3.2 version, which is the latest LTS release - same as we're using for Payroll): https://code.quarkus.io/?S=io.quarkus.platform%3A3.2
+BIRT Website: https://eclipse-birt.github.io/birt-website
+Report Engine (RE) API: https://eclipse-birt.github.io/birt-website/docs/integrating/reapi
+
+
+mvn install:install-file -Dfile=path/to/birt-runtime-library.jar -DgroupId=org.eclipse.birt.runtime -DartifactId=birt-runtime-library -Dversion=4.14.0 -Dpackaging=jar
+//upper is for evertime birt run instal jar
+
+
+proxy:::
+$proxy = New-Object System.Net.WebProxy('http://localhost:8080')
+[System.Net.WebRequest]::DefaultWebProxy = $proxy
+
+// copying birt.engine.runtime.jar in project/lib folder*create
+
+dependencyL Birt-->
+
+in side properties
+         <birt.engine.path>C:/Users/makbd/Downloads/Compressed/code-with-quarkus/code-with-quarkus/lib/org.eclipse.birt.osgi.runtime_4.14.0.jar</birt.engine.path>
+    </properties>
+   
+	  <dependency>
+    <groupId>org.eclipse.birt.runtime</groupId>
+    <artifactId>org.eclipse.birt.engine</artifactId>
+    <version>4.14.0</version>
+    <scope>system</scope>
+    <systemPath>C:/Users/makbd/Downloads/Compressed/code-with-quarkus/code-with-quarkus/lib/org.eclipse.birt.runtime_4.14.0.jar</systemPath>
+</dependency>
+
+
+<dependency>
+    <groupId>jakarta.persistence</groupId>
+    <artifactId>jakarta.persistence-api</artifactId>
+    <version>2.2.3</version> <!-- Use the latest version available -->
+    <scope>provided</scope>
+</dependency>
+
+
+
+jakarta-js/ws 
+<dependency>
+    <groupId>jakarta.platform</groupId>
+    <artifactId>jakarta.jakartaee-api</artifactId>
+    <version>8.0.0</version>
+    <scope>provided</scope>
+</dependency>
+
+
+download jax-rs-ws manually 
+poweshell : Invoke-WebRequest -Uri 'https://repo1.maven.org/maven2/javax/ws/rs/javax.ws.rs-api/2.1.1/javax.ws.rs-api-2.1.1.jar' -OutFile '.\javax.ws.rs-api-2.1.1.jar'
+
+
+
+Database :    postgres            %%%%%%%%%%%%%%
+
+
+
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+
+@Path("/employees")
+public class EmployeeResource {
+
+    @Inject
+    EntityManager em;
+
+    @GET
+    @Path("/{id}")
+    @Transactional
+    public Employee getEmployeeById(@PathParam("id") Long id) {
+        return em.find(Employee.class, id);
+    }
+}
+
+
+#####Settings.xml C:\Users\makbd\.m2\repository
+
+<profiles>
+    <profile>
+        <id>allow-external-resources</id>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+        <repositories>
+            <repository>
+                <id>central</id>
+                <url>https://repo.maven.apache.org/maven2</url>
+            </repository>
+        </repositories>
+    </profile>
+</profiles>
+
+###Install Docker and runin project:    mvn clean test
+
+
+
+
+# Datasource configuration
+quarkus.datasource.db-kind=sqlserver
+quarkus.datasource.username=ANTORSHARDAR\makbd
+quarkus.datasource.password=3421
+quarkus.datasource.jdbc.url=jdbc:sqlserver://ANTORSHARDAR\\SQLEXPRESS:1433;databaseName=your-database
+
+# Hibernate ORM configuration
+quarkus.hibernate-orm.database.generation=update
+quarkus.hibernate-orm.log.sql=true
+
+
+
+
+<!-- Other dependencies -->
+    <dependency>
+        <groupId>org.eclipse.birt.runtime</groupId>
+        <artifactId>org.eclipse.birt.runtime</artifactId>
+        <version>4.14.0</version> <!-- Replace with the version you are using -->
+        <scope>system</scope>
+        <systemPath>C:\Users\makbd\Desktop\QuarkusApp\code-with-quarkus10Am\lib/org.eclipse.birt.runtime_4.14.0.jar</systemPath>
+    </dependency>
+
+
+
+check dependency externions :  powershell :    ./mvnw quarkus:list-extensions
+
+
